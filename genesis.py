@@ -1,12 +1,20 @@
+#!/usr/bin/env python
 import hashlib, binascii, struct, array, os, time, sys, optparse
 import scrypt
 
 from construct import *
 
+class nonceExhausted(Exception):
+  def __init__(self, value):
+    self.value = value
+  def __str__(self):
+    return repr(self.value)
 
 def main():
-  options = get_args()
+ options = get_args()
 
+ tsNonce = 0 # enable iterating nonce in timestamp message in coinbase
+ while True:
   algorithm = get_algorithm(options)
 
   input_script  = create_input_script(options.timestamp)
@@ -17,8 +25,20 @@ def main():
   print_block_info(options, hash_merkle_root)
 
   block_header        = create_block_header(hash_merkle_root, options.time, options.bits, options.nonce)
-  genesis_hash, nonce = generate_hash(block_header, algorithm, options.nonce, options.bits)
-  announce_found_genesis(genesis_hash, nonce)
+  try:
+	genesis_hash, nonce = generate_hash(block_header, algorithm, options.nonce, options.bits)
+ 	announce_found_genesis(genesis_hash, nonce)
+	sys.exit()
+  except(nonceExhausted):
+	tsNonce = tsNonce + 1
+	strHex = "%0.2X" % tsNonce # hex w/o 0x in front - only works up to 255, 256 will crash
+	options.nonce = 0
+	print( "\nNew hex timestamp:\n" + hex(tsNonce) + (options.timestamp).encode('hex') )
+	print( "\nNew string timestamp: " + ( strHex + (options.timestamp).encode('hex') ).decode('hex') )
+	# try again while loop
+  except(KeyboardInterrupt):
+	print('\n\nDetected ^C from keyboard, exit search.\n')
+	sys.exit()
 
 
 def get_args():
@@ -44,6 +64,8 @@ def get_args():
       options.bits = 0x1e0ffff0
     else:
       options.bits = 0x1d00ffff
+  if options.nonce >= 4294967295: #gt or eq
+    parser.error("--nonce or -n have to be between 0 and 4294967294")
   return options
 
 def get_algorithm(options):
@@ -59,6 +81,7 @@ def create_input_script(psz_timestamp):
   if len(psz_timestamp) > 76: psz_prefix = '4c'
 
   script_prefix = '04ffff001d0104' + psz_prefix + chr(len(psz_timestamp)).encode('hex')
+  print ("\ncoinbase: ")
   print (script_prefix + psz_timestamp.encode('hex'))
   return (script_prefix + psz_timestamp.encode('hex')).decode('hex')
 
@@ -136,8 +159,11 @@ def generate_hash(data_block, algorithm, start_nonce, bits):
         return (header_hash, nonce)
       return (sha256_hash, nonce)
     else:
-     nonce      = nonce + 1
-     data_block = data_block[0:len(data_block) - 4] + struct.pack('<I', nonce)  
+      if nonce >= 4294967295: # if greater than, crash at 4294967297 0x0001 0000 0001
+	raise MyError(1)
+      else:
+       nonce      = nonce + 1
+       data_block = data_block[0:len(data_block) - 4] + struct.pack('<I', nonce)
 
 
 def generate_hashes_from_block(data_block, algorithm):
@@ -177,11 +203,12 @@ def calculate_hashrate(nonce, last_updated):
     now             = time.time()
     hashrate        = round(1000000/(now - last_updated))
     generation_time = round(pow(2, 32) / hashrate / 3600, 1)
-    sys.stdout.write("\r%s hash/s, estimate: %s h"%(str(hashrate), str(generation_time)))
+    sys.stdout.write("\r%s hash/s, estimate: %s h - last nonce: %s "%(str(hashrate), str(generation_time), str(nonce)) )
     sys.stdout.flush()
     return now
   else:
     return last_updated
+    # save cpu cycles
 
 
 def print_block_info(options, hash_merkle_root):
@@ -194,9 +221,11 @@ def print_block_info(options, hash_merkle_root):
 
 
 def announce_found_genesis(genesis_hash, nonce):
+  print "\n"
   print "genesis hash found!"
   print "nonce: "        + str(nonce)
   print "genesis hash: " + genesis_hash.encode('hex_codec')
+  print "\n"
 
 
 # GOGOGO!
