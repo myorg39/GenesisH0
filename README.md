@@ -10,6 +10,21 @@ For X13 you will need the [x13_hash](https://github.com/sherlockcoin/X13-PythonH
 For quark-hash you will need the [quark_hash](https://github.com/Neisklar/quarkcoin-hash-python) module and for X15 the [quark_hash](https://github.com/Neisklar/quarkcoin-hash-python) module.
 For quark-hash you will need the [argon2_hash](https://github.com/hynek/argon2_cffi) module and for X15 the [argon2_hash](https://github.com/hynek/argon2_cffi) module.
 
+To install dependencies:
+```
+git clone repo
+cd repo
+sudo ./setup.py install
+```
+example:
+```
+git clone https://github.com/Neisklar/quarkcoin-hash-python
+cd https://github.com/Neisklar/quarkcoin-hash-python
+sudo ./setup.py install
+```
+
+
+
 
 ### Examples
 Create the original genesis hash found in Bitcoin
