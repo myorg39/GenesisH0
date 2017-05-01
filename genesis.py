@@ -40,14 +40,14 @@ def get_args():
 
   (options, args) = parser.parse_args()
   if not options.bits:
-    if options.algorithm in ["quark-hash", "argon2-hash" "scrypt", "X11", "X13", "X15"]:
+    if options.algorithm in ["quark-hash", "argon2-hash", "scrypt", "X11", "X13", "X15"]:
       options.bits = 0x1e0ffff0
     else:
       options.bits = 0x1d00ffff
   return options
 
 def get_algorithm(options):
-  supported_algorithms = ["SHA256", "quark-hash", "argon2-hash" "scrypt", "X11", "X13", "X15"]
+  supported_algorithms = ["SHA256", "quark-hash", "argon2-hash", "scrypt", "X11", "X13", "X15"]
   if options.algorithm in supported_algorithms:
     return options.algorithm
   else:
@@ -153,6 +153,7 @@ def generate_hashes_from_block(data_block, algorithm):
       exec('import %s' % "quark_hash")
     except ImportError:
       sys.exit("Cannot run quark-hash algorithm: module quark_hash not found")
+    header_hash = quark_hash.getPoWHash(data_block)[::-1]
   elif algorithm == 'argon2-hash':
       try:
         exec('import %s' % "argon2_hash")
