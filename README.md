@@ -8,18 +8,18 @@ To create geneses based on X11 algorithm you will also need to install the [xcoi
 For X13 you will need the [x13_hash](https://github.com/sherlockcoin/X13-PythonHash) module and for X15 the [x15_hash](https://github.com/minings/x15_hash) module.
 
 For quark-hash you will need the [quark_hash](https://github.com/Neisklar/quarkcoin-hash-python) module and for X15 the [quark_hash](https://github.com/Neisklar/quarkcoin-hash-python) module.
-For quark-hash you will need the [argon2_hash](https://github.com/hynek/argon2_cffi) module and for X15 the [argon2_hash](https://github.com/hynek/argon2_cffi) module.
+For quark-hash you will need the [argon2_hash](https://github.com/ocminer/argon2-hash) module and for X15 the [argon2_hash](https://github.com/ocminer/argon2-hash) module.
 
 To install dependencies:
 ```
 git clone repo
-cd repo
+cd repo-folder
 sudo ./setup.py install
 ```
 example:
 ```
 git clone https://github.com/Neisklar/quarkcoin-hash-python
-cd https://github.com/Neisklar/quarkcoin-hash-python
+cd quarkcoin-hash-python
 sudo ./setup.py install
 ```
 
