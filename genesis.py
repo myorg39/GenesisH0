@@ -1,5 +1,5 @@
 import hashlib, binascii, struct, array, os, time, sys, optparse
-import scrypt
+#import scrypt
 
 from construct import *
 
@@ -155,10 +155,10 @@ def generate_hashes_from_block(data_block, algorithm):
       sys.exit("Cannot run quark-hash algorithm: module quark_hash not found")
     header_hash = quark_hash.getPoWHash(data_block)[::-1]
   elif algorithm == 'argon2-hash':
-      try:
-        exec('import %s' % "argon2_hash")
-      except ImportError:
-        sys.exit("Cannot run argon2-hash algorithm: module argon2_hash not found")
+    try:
+      exec('import %s' % "argon2_hash")
+    except ImportError:
+      sys.exit("Cannot run argon2-hash algorithm: module argon2_hash not found")
     header_hash = argon2_hash.getPoWHash(data_block)[::-1]
   elif algorithm == 'X11':
     try:
