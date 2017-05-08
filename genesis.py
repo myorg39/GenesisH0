@@ -11,7 +11,7 @@ def main():
 
   input_script  = create_input_script(options.timestamp)
   output_script = create_output_script(options.pubkey)
-  # hash merkle root is the double sha256 hash of the transaction(s) 
+  # hash merkle root is the double sha256 hash of the transaction(s)
   tx = create_transaction(input_script, output_script,options)
   hash_merkle_root = hashlib.sha256(hashlib.sha256(tx).digest()).digest()
   print_block_info(options, hash_merkle_root)
@@ -23,14 +23,14 @@ def main():
 
 def get_args():
   parser = optparse.OptionParser()
-  parser.add_option("-t", "--time", dest="time", default=int(time.time()), 
+  parser.add_option("-t", "--time", dest="time", default=int(time.time()),
                    type="int", help="the (unix) time when the genesisblock is created")
   parser.add_option("-z", "--timestamp", dest="timestamp", default="The Times 03/Jan/2009 Chancellor on brink of second bailout for banks",
                    type="string", help="the pszTimestamp found in the coinbase of the genesisblock")
   parser.add_option("-n", "--nonce", dest="nonce", default=0,
                    type="int", help="the first value of the nonce that will be incremented when searching the genesis hash")
   parser.add_option("-a", "--algorithm", dest="algorithm", default="SHA256",
-                    help="the PoW algorithm: [SHA256|scrypt|X11|X13|X15]")
+                    help="the PoW algorithm: [SHA256|scrypt|X11|X13|X15|KECCAK]")
   parser.add_option("-p", "--pubkey", dest="pubkey", default="04678afdb0fe5548271967f1a67130b7105cd6a828e03909a67962e0ea1f61deb649f6bc3f4cef38c4f35504e51ec112de5c384df7ba0b8d578a4c702b6bf11d5f",
                    type="string", help="the pubkey found in the output script")
   parser.add_option("-v", "--value", dest="value", default=5000000000,
@@ -47,7 +47,7 @@ def get_args():
   return options
 
 def get_algorithm(options):
-  supported_algorithms = ["SHA256", "scrypt", "X11", "X13", "X15"]
+  supported_algorithms = ["SHA256", "scrypt", "X11", "X13", "X15", "KECCAK"]
   if options.algorithm in supported_algorithms:
     return options.algorithm
   else:
@@ -97,7 +97,7 @@ def create_transaction(input_script, output_script,options):
   #tx.out_value         = struct.pack('<q' ,0x000000012a05f200) #50 coins
   tx.output_script_len = 0x43
   tx.output_script     = output_script
-  tx.locktime          = 0 
+  tx.locktime          = 0
   return transaction.build(tx)
 
 
@@ -137,14 +137,14 @@ def generate_hash(data_block, algorithm, start_nonce, bits):
       return (sha256_hash, nonce)
     else:
      nonce      = nonce + 1
-     data_block = data_block[0:len(data_block) - 4] + struct.pack('<I', nonce)  
+     data_block = data_block[0:len(data_block) - 4] + struct.pack('<I', nonce)
 
 
 def generate_hashes_from_block(data_block, algorithm):
   sha256_hash = hashlib.sha256(hashlib.sha256(data_block).digest()).digest()[::-1]
   header_hash = ""
   if algorithm == 'scrypt':
-    header_hash = scrypt.hash(data_block,data_block,1024,1,1,32)[::-1] 
+    header_hash = scrypt.hash(data_block,data_block,1024,1,1,32)[::-1]
   elif algorithm == 'SHA256':
     header_hash = sha256_hash
   elif algorithm == 'X11':
@@ -165,6 +165,12 @@ def generate_hashes_from_block(data_block, algorithm):
     except ImportError:
       sys.exit("Cannot run X15 algorithm: module x15_hash not found")
     header_hash = x15_hash.getPoWHash(data_block)[::-1]
+  elif algorithm == 'KECCAK':
+    try:
+      exec('import %s' % "sha3")
+    except ImportError:
+      sys.exit("Cannot run Keccak algorithm: module sha3 not found")
+    header_hash = hashlib.sha3_384(data_block).digest()[::-1]
   return sha256_hash, header_hash
 
 
