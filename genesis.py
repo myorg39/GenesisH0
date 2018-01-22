@@ -6,8 +6,13 @@ from construct import *
 supported_algorithms = ["SHA256", "scrypt", "X11", "X13", "X15", "quark"]
 
 def main():
+  print 'Searching for genesis hash...'
   options = get_args()
+  merkle_hash, nonce, genesis_hash = get_genesis(options)
+  print_block_info(options, merkle_hash)
+  announce_found_genesis(genesis_hash, nonce)
 
+def get_genesis(options):
   algorithm = get_algorithm(options)
 
   input_script  = create_input_script(options.timestamp)
@@ -15,16 +20,15 @@ def main():
   # hash merkle root is the double sha256 hash of the transaction(s)
   tx = create_transaction(input_script, output_script,options)
   hash_merkle_root = hashlib.sha256(hashlib.sha256(tx).digest()).digest()
-  print_block_info(options, hash_merkle_root)
 
   block_header        = create_block_header(hash_merkle_root, options.time, options.bits, options.nonce)
   genesis_hash, nonce = generate_hash(block_header, algorithm, options.nonce, options.bits)
-  announce_found_genesis(genesis_hash, nonce)
+  return hash_merkle_root[::-1].encode('hex_codec'), str(nonce), genesis_hash.encode('hex_codec')
 
 
 def get_args():
   parser = optparse.OptionParser()
-  parser.add_option("-t", "--time", dest="time", default=int(time.time()), 
+  parser.add_option("-t", "--time", dest="time", default=int(time.time()),
                    type="int", help="the (unix) time when the genesisblock is created")
   parser.add_option("-z", "--timestamp", dest="timestamp", default="The Times 03/Jan/2009 Chancellor on brink of second bailout for banks",
                    type="string", help="the pszTimestamp found in the coinbase of the genesisblock")
@@ -41,10 +45,10 @@ def get_args():
 
   (options, args) = parser.parse_args()
   if not options.bits:
-    if options.algorithm in supported_algorithms:
-      options.bits = 0x1e0ffff0
-    else:
+    if options.algorithm == 'SHA256':
       options.bits = 0x1d00ffff
+    else:
+      options.bits = 0x1e0ffff0
   return options
 
 def get_algorithm(options):
@@ -59,7 +63,7 @@ def create_input_script(psz_timestamp):
   if len(psz_timestamp) > 76: psz_prefix = '4c'
 
   script_prefix = '04ffff001d0104' + psz_prefix + chr(len(psz_timestamp)).encode('hex')
-  print (script_prefix + psz_timestamp.encode('hex'))
+  # print (script_prefix + psz_timestamp.encode('hex'))
   return (script_prefix + psz_timestamp.encode('hex')).decode('hex')
 
 
@@ -97,7 +101,7 @@ def create_transaction(input_script, output_script,options):
   #tx.out_value         = struct.pack('<q' ,0x000000012a05f200) #50 coins
   tx.output_script_len = 0x43
   tx.output_script     = output_script
-  tx.locktime          = 0 
+  tx.locktime          = 0
   return transaction.build(tx)
 
 
@@ -122,51 +126,55 @@ def create_block_header(hash_merkle_root, time, bits, nonce):
 
 # https://en.bitcoin.it/wiki/Block_hashing_algorithm
 def generate_hash(data_block, algorithm, start_nonce, bits):
-  print 'Searching for genesis hash..'
   nonce           = start_nonce
   last_updated    = time.time()
   # https://en.bitcoin.it/wiki/Difficulty
   target = (bits & 0xffffff) * 2**(8*((bits >> 24) - 3))
 
   while True:
-    header_hash = generate_hashes_from_block(data_block, algorithm)
+    sha256_hash, header_hash = generate_hashes_from_block(data_block, algorithm)
     last_updated             = calculate_hashrate(nonce, last_updated)
     if is_genesis_hash(header_hash, target):
-      return (header_hash, nonce)
+      if algorithm == "X11" or algorithm == "X13" or algorithm == "X15" or algorithm == "quark":
+        return (header_hash, nonce)
+      return (sha256_hash, nonce)
     else:
      nonce      = nonce + 1
      data_block = data_block[0:len(data_block) - 4] + struct.pack('<I', nonce)
 
 
 def generate_hashes_from_block(data_block, algorithm):
+  sha256_hash = hashlib.sha256(hashlib.sha256(data_block).digest()).digest()[::-1]
+  header_hash = ""
   if algorithm == 'scrypt':
-    return scrypt.hash(data_block,data_block,1024,1,1,32)[::-1]
+    header_hash = scrypt.hash(data_block,data_block,1024,1,1,32)[::-1]
   elif algorithm == 'SHA256':
-    return hashlib.sha256(hashlib.sha256(data_block).digest()).digest()[::-1]
+    header_hash = sha256_hash
   elif algorithm == 'X11':
     try:
-      import xcoin_hash
-      header_hash = xcoin_hash.getPoWHash(data_block)[::-1]
+      exec('import %s' % "xcoin_hash")
     except ImportError:
       sys.exit("Cannot run X11 algorithm: module xcoin_hash not found")
+    header_hash = xcoin_hash.getPoWHash(data_block)[::-1]
   elif algorithm == 'X13':
     try:
-      import x13_hash
-      return x13_hash.getPoWHash(data_block)[::-1]
+      exec('import %s' % "x13_hash")
     except ImportError:
       sys.exit("Cannot run X13 algorithm: module x13_hash not found")
+    header_hash = x13_hash.getPoWHash(data_block)[::-1]
   elif algorithm == 'X15':
     try:
-      import x15_hash
-      return x15_hash.getPoWHash(data_block)[::-1]
+      exec('import %s' % "x15_hash")
     except ImportError:
       sys.exit("Cannot run X15 algorithm: module x15_hash not found")
+    header_hash = x15_hash.getPoWHash(data_block)[::-1]
   elif algorithm == 'quark':
     try:
         import quark_hash
-        return quark_hash.getPoWHash(data_block)[::-1]
+        header_hash = quark_hash.getPoWHash(data_block)[::-1]
     except ImportError:
         sys.exit("Cannot run quark algorithm: module quark_hash not found")
+  return sha256_hash, header_hash
 
 
 
@@ -197,9 +205,10 @@ def print_block_info(options, hash_merkle_root):
 
 def announce_found_genesis(genesis_hash, nonce):
   print "genesis hash found!"
-  print "nonce: "        + str(nonce)
-  print "genesis hash: " + genesis_hash.encode('hex_codec')
+  print "nonce: "        + nonce
+  print "genesis hash: " + genesis_hash
 
 
 # GOGOGO!
-main()
+if __name__ == '__main__':
+  main()
