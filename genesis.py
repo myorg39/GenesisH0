@@ -186,7 +186,7 @@ def calculate_hashrate(nonce, last_updated):
 
 def print_block_info(options, hash_merkle_root):
   print "algorithm: "    + (options.algorithm)
-  print "merkle hash: "  + hash_merkle_root[::-1].encode('hex_codec')
+  print "merkle hash: "  + hash_merkle_root
   print "pszTimestamp: " + options.timestamp
   print "pubkey: "       + options.pubkey
   print "time: "         + str(options.time)
@@ -196,7 +196,7 @@ def print_block_info(options, hash_merkle_root):
 def announce_found_genesis(genesis_hash, nonce):
   print "genesis hash found!"
   print "nonce: "        + str(nonce)
-  print "genesis hash: " + genesis_hash.encode('hex_codec')
+  print "genesis hash: " + genesis_hash
 
 
 # GOGOGO!
