@@ -63,5 +63,5 @@ Create the original genesis hash found in HiroCoin (requires [xcoin-hash](https:
       -v VALUE, --value=VALUE
          the value in coins for the output, full value (exp. in bitcoin 5000000000 - To get other coins value: Block Value * 100000000)
       -b BITS, --bits=BITS
-         the target in compact representation, associated to a difficulty of 1
+         the target in compact representation, associated to a difficulty of 1.
 
