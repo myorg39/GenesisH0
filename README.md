@@ -8,7 +8,7 @@ A Python script for generating the parameters required to create a unique genesi
 ## Dependencies
 
 To run this script, you'll need to install the following dependencies:
-
+```
 
 
 For Windows:
