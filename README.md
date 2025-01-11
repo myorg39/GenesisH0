@@ -9,9 +9,7 @@ A Python script for generating the parameters required to create a unique genesi
 
 To run this script, you'll need to install the following dependencies:
 
-```bash
-sudo pip install scrypt construct==2.5.2
-```
+
 
 For Windows:
 ```bash
@@ -26,8 +24,8 @@ python -m venv .venv
 # Install dependencies
 pip install -r requirements.txt
 
-# Run your project (example)
-python app.py  # or python main.py
+# Run your project 
+python genesis.py  
 ```
 
 For Linux:
@@ -44,8 +42,8 @@ source .venv/bin/activate
 # Install dependencies
 pip install -r requirements.txt
 
-# Run your project (example)
-python app.py  # or python main.py
+# Run your project 
+python genesis.py  
 
 ```
 
