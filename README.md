@@ -13,6 +13,42 @@ To run this script, you'll need to install the following dependencies:
 sudo pip install scrypt construct==2.5.2
 ```
 
+For Windows:
+```bash
+# Clone the repository
+git clone https://github.com/aubreyosenda/GenesisH0.git
+cd GenesisH0
+
+# Create and activate a virtual environment
+python -m venv .venv
+.\.venv\Scripts\activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run your project (example)
+python app.py  # or python main.py
+```
+
+For Linux:
+bash
+Copy code
+# Clone the repository
+git clone https://github.com/aubreyosenda/GenesisH0.git
+cd GenesisH0
+
+# Create and activate a virtual environment
+python3 -m venv .venv
+source .venv/bin/activate
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Run your project (example)
+python app.py  # or python main.py
+
+
+
 For specific algorithms, additional modules are required:
 - **X11**: Install the [xcoin-hash](https://github.com/lhartikk/xcoin-hash) module.
 - **X13**: Install the [x13_hash](https://github.com/sherlockcoin/X13-PythonHash) module.
