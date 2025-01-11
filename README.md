@@ -31,8 +31,8 @@ python app.py  # or python main.py
 ```
 
 For Linux:
-bash
-Copy code
+
+```bash
 # Clone the repository
 git clone https://github.com/aubreyosenda/GenesisH0.git
 cd GenesisH0
@@ -47,7 +47,7 @@ pip install -r requirements.txt
 # Run your project (example)
 python app.py  # or python main.py
 
-
+```
 
 For specific algorithms, additional modules are required:
 - **X11**: Install the [xcoin-hash](https://github.com/lhartikk/xcoin-hash) module.
