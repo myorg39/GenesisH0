@@ -1,0 +1,26 @@
+name: Create Release
+
+on:
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'The tag to create the release from (e.g., v1.0.0)'
+        required: true
+        type: string
+
+jobs:
+  create_release:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Create GitHub Release
+        uses: ncipollo/release-action@v1
+        with:
+          tag: ${{ github.event.inputs.tag }}
+          name: Release ${{ github.event.inputs.tag }}
+          body: |
+            Release notes for ${{ github.event.inputs.tag }}
+          prerelease: false
+          draft: false

@@ -2,12 +2,12 @@ import hashlib, binascii, struct, array, os, time, sys, optparse
 import scrypt
 
 from construct import *
-
+#4
 
 def main():
   options = get_args()
 
-  algorithm = get_algorithm(options) #1
+  algorithm = get_algorithm(options) #3
 
   input_script  = create_input_script(options.timestamp)
   output_script = create_output_script(options.pubkey)

@@ -1,0 +1,13 @@
+name: Push Tag
+
+on:
+  push:
+    tags:
+      - '*'
+
+jobs:
+  echo:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Print tag name
+        run: echo "Tag pushed"
