@@ -7,7 +7,7 @@ from construct import *
 def main():
   options = get_args()
 
-  algorithm = get_algorithm(options)
+  algorithm = get_algorithm(options) #1
 
   input_script  = create_input_script(options.timestamp)
   output_script = create_output_script(options.pubkey)
